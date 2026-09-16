@@ -79,8 +79,3 @@ app.get('/api/health', (_req: express.Request, res: express.Response) => {
   res.json(response);
 });
 
-
-
-
-
-
