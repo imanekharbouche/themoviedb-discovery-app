@@ -19,3 +19,12 @@ revert: revert to previous commit
 The commit message should be in the imperative mood, meaning it should describe what the commit does, not what it did.
 
 The commit message should be concise and to the point, ideally no more than 72 characters in length. If the commit message is longer than 72 characters, it should be wrapped to the next line.
+
+# Instructions pour GitHub Copilot
+
+## Conventions de commit
+
+- Utiliser la convention de commit "Conventional Commits".
+- Types autorisés : feat, fix, docs, style, refactor, test, chore.
+- Format : `<type>: <message en anglais>`.
+- Exemple : "feat: add new feature to the application"
