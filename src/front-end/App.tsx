@@ -5,7 +5,6 @@ import './app.css';
 
 export default function App() {
   useEffect(() => {
-    // fetch data from an API /api/movies/popular
     fetch('/api/movies/popular')
       .then((response) => response.json())
       .then((data) => {
@@ -15,9 +14,7 @@ export default function App() {
 
   const [movies, setMovies] = useState<Movie[] | null>(null);
 
-  // useEffect hook to fetch data from an API when the component mounts
   useEffect(() => {
-    // fetch data from an API /api/movies/popular
     fetch('/api/movies/popular')
       .then((response) => response.json())
       .then((data) => {
