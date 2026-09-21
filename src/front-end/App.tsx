@@ -1,18 +1,18 @@
-import { useEffect, useState } from "react"
-import type { Movie } from "../back-end/schemas/MoviesTypes"
-import MovieItem from "./components/MovieItem"
+import { useEffect, useState } from 'react';
+import type { Movie } from '../back-end/schemas/MoviesTypes';
+import MovieItem from './components/MovieItem';
 
 export default function App() {
-    useEffect(() => {
-        // fetch data from an API /api/movies/popular
-        fetch('/api/movies/popular')
-            .then((response) => response.json())
-            .then((data) => {
-                console.log(data)
-            })
-    }, [])
+  useEffect(() => {
+    // fetch data from an API /api/movies/popular
+    fetch('/api/movies/popular')
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+      });
+  }, []);
 
-    const [movies, setMovies] = useState<Movie[] | null>(null)
+  const [movies, setMovies] = useState<Movie[] | null>(null);
 
   // useEffect hook to fetch data from an API when the component mounts
   useEffect(() => {
@@ -20,33 +20,23 @@ export default function App() {
     fetch('/api/movies/popular')
       .then((response) => response.json())
       .then((data) => {
-        console.log('Fetched movies data:', data) // Log the fetched data for debugging
-        setMovies(data.results) // Update the state with the fetched movies data
-      })
-  }, [])
+        console.log('Fetched movies data:', data); // Log the fetched data for debugging
+        setMovies(data.results); // Update the state with the fetched movies data
+      });
+  }, []);
 
-    return (
+  return (
     <div>
       <h1>Popular Movies</h1>
-      {movies ? (
-        <ul>
-          {movies.map((movie) => (
-            <li key={movie.id}>
-              <h2>{movie.title}</h2>
-              <p>{movie.overview}</p>
-              <p>Release Date: {movie.release_date}</p>
-              <p>Rating: {movie.vote_average}</p>
-            </li>
-          ))}
-        </ul>
-      ) : null}
       {movies ? (
         <ul>
           {movies.map((movie) => (
             <MovieItem key={movie.id} movie={movie} />
           ))}
         </ul>
-      ) : null}
+      ) : (
+        <p>Loading...</p>
+      )}
     </div>
-  )
+  );
 }
