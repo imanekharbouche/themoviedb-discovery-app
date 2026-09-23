@@ -6,6 +6,7 @@ import {
   DEFAULT_PAGE,
   DEFAULT_REGION,
 } from '../back-end/constants';
+// @ts-expect-error CSS imports are handled by the bundler.
 import './app.css';
 
 export default function App() {
