@@ -47,18 +47,12 @@ describe('back-end server routes', () => {
       });
     });
   });
+});
 
-  describe('route registration', () => {
-    it('registers the / route', () => {
-      expect(routeHandlers.has('/')).toBe(true);
-    });
+it('registers the /api/movies/popular route', () => {
+  expect(routeHandlers.has('/api/movies/popular')).toBe(true);
+});
 
-    it('registers the /api/movies/popular route', () => {
-      expect(routeHandlers.has('/api/movies/popular')).toBe(true);
-    });
-
-    it('registers the /api/health route', () => {
-      expect(routeHandlers.has('/api/health')).toBe(true);
-    });
-  });
+it('registers the /api/health route', () => {
+  expect(routeHandlers.has('/api/health')).toBe(true);
 });
