@@ -5,6 +5,8 @@ import {
   TmdbMoviesRawResponse,
 } from './schemas/MoviesTypes';
 import { toSupportedMovie } from './utils';
+import { registerHealthApi } from './health-api';
+import { registerMoviesApi } from './movies-api';
 
 // Create a new express application instance
 const app = express();
@@ -18,6 +20,9 @@ app.get('/', (_req: express.Request, res: express.Response) => {
 app.listen(port, () => {
   console.log(`Example app in TypeScript listening on port ${port}`);
 });
+// C'est cette ligne qui connecte les routes de movies-api.ts au serveur !
+registerHealthApi(app);
+registerMoviesApi(app);
 
 // Define a route handler for fetching popular movies from TMDB API
 app.get(
