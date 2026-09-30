@@ -5,29 +5,62 @@ import type { Movie } from '../../back-end/schemas/MoviesTypes';
 export default function MovieDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [movie, setMovie] = useState<Movie | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const controller = new AbortController();
     async function fetchMovieDetails() {
       try {
-        // Appel à la route back-end de détail que vous avez créée
-        const response = await fetch(`/api/movies/${id}`);
+        setIsLoading(true);
+        setError(null);
+        const response = await fetch(`/api/movies/${id}`, {
+          signal: controller.signal,
+        });
         if (!response.ok) throw new Error('Film introuvable');
-        const data = await response.json();
+        const data = (await response.json()) as Movie;
         setMovie(data);
-      } catch (error) {
-        console.error('Erreur lors de la récupération des détails :', error);
+      } catch (requestError) {
+        if (
+          requestError instanceof DOMException &&
+          requestError.name === 'AbortError'
+        ) {
+          return;
+        }
+        console.error(
+          'Erreur lors de la récupération des détails :',
+          requestError,
+        );
+        setError('Impossible de charger les détails du film.');
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
       }
     }
 
     if (id) {
       fetchMovieDetails();
     }
+
+    return () => controller.abort();
   }, [id]);
 
-  if (!movie) {
+  if (isLoading) {
     return (
       <main className="app-shell">
         <p>Chargement des détails du film...</p>
+      </main>
+    );
+  }
+
+  if (error || !movie) {
+    return (
+      <main className="app-shell">
+        <p className="status-message" role="alert">
+          {error ?? 'Film introuvable.'}
+        </p>
+        <Link to="/movies">Retour vers les films populaires</Link>
       </main>
     );
   }
@@ -39,57 +72,178 @@ export default function MovieDetailPage() {
 
   return (
     <main className="app-shell">
+      <h1
+        style={{
+          fontSize: '3rem',
+          fontWeight: '900',
+          color: '#1a202c',
+          margin: '0 0 4px 0',
+        }}
+      >
+        Détails du film
+      </h1>
       <Link
         to="/movies"
-        style={{ textDecoration: 'none', color: '#2f6f95', fontWeight: 'bold' }}
+        style={{
+          color: '#5b21b6',
+          textDecoration: 'underline',
+          display: 'inline-block',
+          marginBottom: '24px',
+          fontWeight: '500',
+        }}
       >
-        ← Retour aux films populaires
+        ← Retour vers les films populaires
       </Link>
 
       <div
         style={{
+          backgroundColor: '#f4f9f9',
+          borderRadius: '24px',
+          padding: '32px',
           display: 'flex',
-          gap: '32px',
-          marginTop: '24px',
+          gap: '40px',
           flexWrap: 'wrap',
         }}
       >
-        {posterUrl && (
-          <img
-            src={posterUrl}
-            alt={`Affiche de ${movie.title}`}
-            style={{
-              borderRadius: '14px',
-              maxWidth: '300px',
-              width: '100%',
-              objectFit: 'cover',
-              boxShadow: '0 8px 18px rgb(41 69 99 / 15%)',
-            }}
-          />
-        )}
+        {/* Colonne Gauche : Affiche */}
+        <div style={{ flexShrink: 0, minWidth: '300px' }}>
+          {posterUrl && (
+            <img
+              src={posterUrl}
+              alt={`Affiche de ${movie.title}`}
+              style={{
+                borderRadius: '16px',
+                width: '100%',
+                maxWidth: '380px',
+                boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+              }}
+            />
+          )}
+        </div>
 
-        <div style={{ flex: '1', minWidth: '300px' }}>
-          <h1
-            style={{ fontSize: '2.5rem', marginBottom: '8px', marginTop: '0' }}
-          >
-            {movie.title}
-          </h1>
-          <p
-            style={{
-              fontSize: '1.2rem',
-              color: '#455576',
-              marginBottom: '24px',
-            }}
-          >
-            {releaseYear} • Note : {movie.vote_average?.toFixed(1)}/10
-          </p>
+        {/* Colonne Droite : Informations */}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '20px',
+            flex: '1',
+            minWidth: '300px',
+          }}
+        >
+          <div>
+            <span
+              style={{
+                color: '#0d9488',
+                fontWeight: '800',
+                fontSize: '0.8rem',
+                letterSpacing: '1px',
+                textTransform: 'uppercase',
+              }}
+            >
+              Détails du film
+            </span>
+            <h2
+              style={{
+                fontSize: '3.5rem',
+                fontWeight: '900',
+                color: '#1e293b',
+                margin: '4px 0',
+              }}
+            >
+              {movie.title}
+            </h2>
+            {movie.tagline && (
+              <p style={{ fontSize: '1.3rem', color: '#475569', margin: 0 }}>
+                {movie.tagline}
+              </p>
+            )}
+          </div>
 
-          <h2 style={{ fontSize: '1.5rem', marginBottom: '12px' }}>Synopsis</h2>
-          <p
-            style={{ lineHeight: '1.6', fontSize: '1.1rem', color: '#1a1a1a' }}
-          >
-            {movie.overview || 'Aucun synopsis disponible pour ce film.'}
-          </p>
+          {/* Badges Année et Note */}
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+            <span
+              style={{
+                backgroundColor: 'white',
+                padding: '8px 16px',
+                borderRadius: '20px',
+                fontWeight: 'bold',
+                fontSize: '0.9rem',
+                color: '#1e293b',
+              }}
+            >
+              Année de sortie {releaseYear}
+            </span>
+            <span
+              style={{
+                backgroundColor: 'white',
+                padding: '8px 16px',
+                borderRadius: '20px',
+                fontWeight: 'bold',
+                fontSize: '0.9rem',
+                color: '#1e293b',
+              }}
+            >
+              Note {movie.vote_average?.toFixed(1)}
+            </span>
+          </div>
+
+          {/* Genres */}
+          {movie.genres && movie.genres.length > 0 && (
+            <div>
+              <h3
+                style={{
+                  fontSize: '1.5rem',
+                  fontWeight: '900',
+                  color: '#1e293b',
+                  margin: '0 0 12px 0',
+                }}
+              >
+                Genres
+              </h3>
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                {movie.genres.map((genre: { id: number; name: string }) => (
+                  <span
+                    key={genre.id}
+                    style={{
+                      backgroundColor: 'white',
+                      padding: '6px 16px',
+                      borderRadius: '20px',
+                      fontSize: '0.95rem',
+                      fontWeight: '700',
+                      color: '#1e293b',
+                    }}
+                  >
+                    {genre.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Résumé */}
+          <div>
+            <h3
+              style={{
+                fontSize: '1.5rem',
+                fontWeight: '900',
+                color: '#1e293b',
+                margin: '0 0 8px 0',
+              }}
+            >
+              Résumé
+            </h3>
+            <p
+              style={{
+                color: '#334155',
+                lineHeight: '1.6',
+                fontSize: '1.1rem',
+                margin: 0,
+              }}
+            >
+              {movie.overview || 'Aucun résumé disponible pour ce film.'}
+            </p>
+          </div>
         </div>
       </div>
     </main>
