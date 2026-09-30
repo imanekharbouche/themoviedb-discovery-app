@@ -10,7 +10,7 @@ export type TmdbMoviesRawResponse = {
 export type TmdbMovie = {
   adult: boolean;
   backdrop_path: string | null;
-  genre_ids: number[];
+  genre_ids?: number[];
   id: number;
   original_language: string;
   original_title: string;
@@ -22,6 +22,9 @@ export type TmdbMovie = {
   video: boolean;
   vote_average: number;
   vote_count: number;
+  // 👇 Les deux champs ajoutés pour la page de détail :
+  tagline?: string | null;
+  genres?: { id: number; name: string }[];
 };
 
 // TypeScript type for the API response when fetching movies, containing an array of supported Movie objects.
