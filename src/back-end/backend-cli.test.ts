@@ -6,6 +6,9 @@ const DEFAULT_DATABASE_PATH = '/tmp/movies-default.sqlite';
 const closeMock = vi.fn();
 const readFileSyncMock = vi.fn();
 const importMoviesFromCsvMock = vi.fn(() => 2);
+const parseCountriesCsvMock = vi.fn(() => [{ code: 'FR', name: 'France' }]);
+const upsertCountriesMock = vi.fn();
+const deleteUnusedCountriesMock = vi.fn(() => 1);
 const getDatabaseMock = vi.fn(() => ({
   close: closeMock,
 }));
@@ -21,6 +24,15 @@ vi.mock('node:fs', () => ({
 
 vi.mock('./movie-csv-import.ts', () => ({
   importMoviesFromCsv: importMoviesFromCsvMock,
+}));
+
+vi.mock('./database/country-csv.ts', () => ({
+  parseCountriesCsv: parseCountriesCsvMock,
+}));
+
+vi.mock('./database/country-repository.ts', () => ({
+  upsertCountries: upsertCountriesMock,
+  deleteUnusedCountries: deleteUnusedCountriesMock,
 }));
 
 /**
@@ -97,6 +109,76 @@ describe('backend-cli.ts', () => {
       } finally {
         logSpy.mockRestore();
       }
+    });
+
+    it('imports countries after validating the CSV and closes the database', async () => {
+      const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+      readFileSyncMock.mockReturnValue('countries csv');
+      try {
+        await runCliWithArgs(['add-countries', 'data/countries.csv']);
+
+        expect(readFileSyncMock).toHaveBeenCalledWith(
+          'data/countries.csv',
+          'utf8',
+        );
+        expect(getDatabaseMock).toHaveBeenCalledWith(DEFAULT_DATABASE_PATH);
+        expect(upsertCountriesMock).toHaveBeenCalledWith(
+          expect.objectContaining({ close: closeMock }),
+          [{ code: 'FR', name: 'France' }],
+        );
+        expect(closeMock).toHaveBeenCalledOnce();
+        expect(logSpy).toHaveBeenCalledWith(
+          `1 countries imported into ${resolve(DEFAULT_DATABASE_PATH)}`,
+        );
+      } finally {
+        logSpy.mockRestore();
+      }
+    });
+
+    it('uses the configured path when importing countries', async () => {
+      const customDatabasePath = './data/custom-countries.sqlite';
+      const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+      readFileSyncMock.mockReturnValue('countries csv');
+      try {
+        await runCliWithArgs([
+          'add-countries',
+          'data/countries.csv',
+          '--path',
+          customDatabasePath,
+        ]);
+
+        expect(getDatabaseMock).toHaveBeenCalledWith(customDatabasePath);
+      } finally {
+        logSpy.mockRestore();
+      }
+    });
+
+    it('cleans unused countries and closes the database', async () => {
+      const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+      try {
+        await runCliWithArgs(['clean-countries']);
+
+        expect(deleteUnusedCountriesMock).toHaveBeenCalledWith(
+          expect.objectContaining({ close: closeMock }),
+        );
+        expect(closeMock).toHaveBeenCalledOnce();
+        expect(logSpy).toHaveBeenCalledWith(
+          `1 countries removed from ${resolve(DEFAULT_DATABASE_PATH)}`,
+        );
+      } finally {
+        logSpy.mockRestore();
+      }
+    });
+
+    it('does not open SQLite when country CSV validation fails', async () => {
+      parseCountriesCsvMock.mockImplementationOnce(() => {
+        throw new Error('Invalid countries CSV');
+      });
+
+      await expect(
+        runCliWithArgs(['add-countries', 'invalid.csv']),
+      ).rejects.toThrow('Invalid countries CSV');
+      expect(getDatabaseMock).not.toHaveBeenCalled();
     });
   });
 });
