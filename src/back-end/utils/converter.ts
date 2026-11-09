@@ -44,6 +44,7 @@ export const toSupportedMovieDetails = (
     overview: movie.overview,
     popularity: movie.popularity,
     poster_path: movie.poster_path,
+    production_countries: movie.production_countries,
     release_date: movie.release_date,
     title: movie.title,
     vote_average: movie.vote_average,
