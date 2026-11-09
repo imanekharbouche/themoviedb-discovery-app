@@ -92,6 +92,18 @@ npx tsx src/back-end/backend-cli.ts clean-countries --path ./data/ma-base.sqlite
 Le [MCD et le schéma relationnel](docs/database-model.md) décrivent les
 entités, les cardinalités et les contraintes utilisées pour le tableau de bord.
 
+## Storybook
+
+Storybook permet de visualiser les composants et les futures variantes du
+tableau de bord sans démarrer l'API :
+
+```sh
+npm run storybook
+```
+
+Le serveur est disponible sur [http://localhost:6006](http://localhost:6006).
+Pour générer une version statique, utilisez `npm run build-storybook`.
+
 ## API locale
 
 | Méthode | Route                  | Description                                                       |
