@@ -28,8 +28,12 @@ describe('NavBar', () => {
     ).toBeTruthy();
     expect(screen.getByText('TMDB Discovery')).not.toBeNull();
     const moviesLink = screen.getByRole('link', { name: 'Films populaires' });
+    const dashboardLink = screen.getByRole('link', {
+      name: 'Tableau de bord',
+    });
     const aboutLink = screen.getByRole('link', { name: 'À propos' });
     expect(moviesLink.getAttribute('href')).toBe('/movies');
+    expect(dashboardLink.getAttribute('href')).toBe('/dashboard');
     expect(aboutLink.getAttribute('href')).toBe('/about');
     expect(moviesLink.getAttribute('aria-current')).toBe('page');
     expect(aboutLink.getAttribute('aria-current')).toBeNull();
@@ -50,6 +54,16 @@ describe('NavBar', () => {
     expect(
       screen
         .getByRole('link', { name: 'À propos' })
+        .getAttribute('aria-current'),
+    ).toBe('page');
+  });
+
+  it('marks the dashboard active on the dashboard route', () => {
+    renderNavBar('/dashboard');
+
+    expect(
+      screen
+        .getByRole('link', { name: 'Tableau de bord' })
         .getAttribute('aria-current'),
     ).toBe('page');
   });
