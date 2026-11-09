@@ -79,7 +79,10 @@ export function upsertMovies(
     'INSERT INTO movie_genres (movie_id, genre_id) VALUES (?, ?)',
   );
 
-  database.exec('BEGIN');
+  const savepoint = 'upsert_movies';
+  const hasOuterTransaction = database.isTransaction;
+  if (hasOuterTransaction) database.exec(`SAVEPOINT ${savepoint}`);
+  else database.exec('BEGIN');
   try {
     for (const movie of movies) {
       statement.run(
@@ -100,9 +103,13 @@ export function upsertMovies(
         insertGenre.run(movie.id, genreId);
       }
     }
-    database.exec('COMMIT');
+    if (hasOuterTransaction) database.exec(`RELEASE SAVEPOINT ${savepoint}`);
+    else database.exec('COMMIT');
   } catch (error) {
-    database.exec('ROLLBACK');
+    if (hasOuterTransaction) {
+      database.exec(`ROLLBACK TO SAVEPOINT ${savepoint}`);
+      database.exec(`RELEASE SAVEPOINT ${savepoint}`);
+    } else database.exec('ROLLBACK');
     throw error;
   }
 }

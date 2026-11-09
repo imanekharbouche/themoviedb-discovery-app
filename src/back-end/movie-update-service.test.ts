@@ -37,6 +37,56 @@ function createDatabase(): DatabaseSync {
   return database;
 }
 
+function seedDatabase(database: DatabaseSync): void {
+  database
+    .prepare('INSERT INTO genres (id, name) VALUES (?, ?)')
+    .run(18, 'Drama');
+  database
+    .prepare('INSERT INTO countries (code, name) VALUES (?, ?)')
+    .run('FR', 'France');
+  database
+    .prepare(
+      `INSERT INTO movies (
+        id, title, original_title, original_language, overview,
+        release_date, popularity, vote_average, vote_count,
+        poster_path, backdrop_path, collected_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
+    )
+    .run(
+      movie.id,
+      movie.title,
+      movie.original_title,
+      movie.original_language,
+      movie.overview,
+      movie.release_date,
+      movie.popularity,
+      movie.vote_average,
+      movie.vote_count,
+      movie.poster_path,
+      movie.backdrop_path,
+    );
+  database
+    .prepare('INSERT INTO movie_genres (movie_id, genre_id) VALUES (?, ?)')
+    .run(1, 18);
+  database
+    .prepare(
+      'INSERT INTO production_countries (movie_id, country_code) VALUES (?, ?)',
+    )
+    .run(1, 'FR');
+}
+
+function databaseState(database: DatabaseSync) {
+  return {
+    genres: database.prepare('SELECT * FROM genres').all(),
+    countries: database.prepare('SELECT * FROM countries').all(),
+    movies: database.prepare('SELECT * FROM movies').all(),
+    movieGenres: database.prepare('SELECT * FROM movie_genres').all(),
+    productionCountries: database
+      .prepare('SELECT * FROM production_countries')
+      .all(),
+  };
+}
+
 function createApi(
   movies: Movie[] = [movie],
   movieDetails: MovieDetails[] = [details],
@@ -185,6 +235,8 @@ describe('movie-update-service', () => {
 
   it('rolls back production country associations when association storage fails', async () => {
     const database = createDatabase();
+    seedDatabase(database);
+    const initialState = databaseState(database);
     database.exec(`
       CREATE TRIGGER reject_production_country
       BEFORE INSERT ON production_countries
@@ -197,11 +249,38 @@ describe('movie-update-service', () => {
       await expect(updateMoviesFromApi(database, createApi())).rejects.toThrow(
         'association failed',
       );
-      expect(
-        database.prepare('SELECT * FROM production_countries').all(),
-      ).toEqual([]);
+      expect(databaseState(database)).toEqual(initialState);
     } finally {
       database.close();
     }
   });
+
+  it.each([
+    ['genres', 'reject_genres', 'genres'],
+    ['countries', 'reject_countries', 'countries'],
+    ['movies', 'reject_movies', 'movies'],
+  ])(
+    'restores the initial state when %s storage fails',
+    async (_name, triggerName, table) => {
+      const database = createDatabase();
+      seedDatabase(database);
+      const initialState = databaseState(database);
+      database.exec(`
+        CREATE TRIGGER ${triggerName}
+        BEFORE UPDATE ON ${table}
+        BEGIN
+          SELECT RAISE(ABORT, 'storage failed');
+        END
+      `);
+
+      try {
+        await expect(
+          updateMoviesFromApi(database, createApi()),
+        ).rejects.toThrow('storage failed');
+        expect(databaseState(database)).toEqual(initialState);
+      } finally {
+        database.close();
+      }
+    },
+  );
 });

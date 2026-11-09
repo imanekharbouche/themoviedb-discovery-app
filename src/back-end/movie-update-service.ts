@@ -70,27 +70,20 @@ function updateProductionCountries(
     production_countries: MovieDetails['production_countries'];
   }>,
 ): void {
-  database.exec('BEGIN');
-  try {
-    const deleteCountries = database.prepare(
-      'DELETE FROM production_countries WHERE movie_id = ?',
-    );
-    const insertCountry = database.prepare(
-      'INSERT INTO production_countries (movie_id, country_code) VALUES (?, ?)',
-    );
+  const deleteCountries = database.prepare(
+    'DELETE FROM production_countries WHERE movie_id = ?',
+  );
+  const insertCountry = database.prepare(
+    'INSERT INTO production_countries (movie_id, country_code) VALUES (?, ?)',
+  );
 
-    for (const movie of movies) {
-      deleteCountries.run(movie.id);
-      for (const country of new Set(
-        movie.production_countries.map(({ iso_3166_1 }) => iso_3166_1),
-      )) {
-        insertCountry.run(movie.id, country);
-      }
+  for (const movie of movies) {
+    deleteCountries.run(movie.id);
+    for (const country of new Set(
+      movie.production_countries.map(({ iso_3166_1 }) => iso_3166_1),
+    )) {
+      insertCountry.run(movie.id, country);
     }
-    database.exec('COMMIT');
-  } catch (error) {
-    database.exec('ROLLBACK');
-    throw error;
   }
 }
 
@@ -104,8 +97,15 @@ export async function updateMoviesFromApi(
   const details = await Promise.all(
     movies.map(({ id }) => api.getMovieDetails(id)),
   );
-  upsertGenres(database, uniqueGenres(details));
-  upsertCountries(database, uniqueCountries(details));
-  upsertMovies(database, movies);
-  updateProductionCountries(database, details);
+  database.exec('BEGIN');
+  try {
+    upsertGenres(database, uniqueGenres(details));
+    upsertCountries(database, uniqueCountries(details));
+    upsertMovies(database, movies);
+    updateProductionCountries(database, details);
+    database.exec('COMMIT');
+  } catch (error) {
+    database.exec('ROLLBACK');
+    throw error;
+  }
 }
