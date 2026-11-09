@@ -75,6 +75,20 @@ npx tsx src/back-end/backend-cli.ts clean-genres
 
 Les commandes affichent le nombre de genres traités et le chemin de la base utilisée.
 
+Pour importer ou actualiser les pays depuis le fichier CSV fourni :
+
+```sh
+npx tsx src/back-end/backend-cli.ts add-countries ./data/countries.csv
+npx tsx src/back-end/backend-cli.ts add-countries ./data/countries.csv --path ./data/ma-base.sqlite
+```
+
+Pour supprimer les pays qui ne sont associés à aucun film :
+
+```sh
+npx tsx src/back-end/backend-cli.ts clean-countries
+npx tsx src/back-end/backend-cli.ts clean-countries --path ./data/ma-base.sqlite
+```
+
 Le [MCD et le schéma relationnel](docs/database-model.md) décrivent les
 entités, les cardinalités et les contraintes utilisées pour le tableau de bord.
 
