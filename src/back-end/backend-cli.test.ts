@@ -4,6 +4,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const DEFAULT_DATABASE_PATH = '/tmp/movies-default.sqlite';
 
 const closeMock = vi.fn();
+const readFileSyncMock = vi.fn();
+const importMoviesFromCsvMock = vi.fn(() => 2);
 const getDatabaseMock = vi.fn(() => ({
   close: closeMock,
 }));
@@ -11,6 +13,14 @@ const getDatabaseMock = vi.fn(() => ({
 vi.mock('./database/schema.ts', () => ({
   DEFAULT_DATABASE_PATH,
   getDatabase: getDatabaseMock,
+}));
+
+vi.mock('node:fs', () => ({
+  readFileSync: readFileSyncMock,
+}));
+
+vi.mock('./movie-csv-import.ts', () => ({
+  importMoviesFromCsv: importMoviesFromCsvMock,
 }));
 
 /**
@@ -59,6 +69,30 @@ describe('backend-cli.ts', () => {
         expect(closeMock).toHaveBeenCalledOnce();
         expect(logSpy).toHaveBeenCalledWith(
           `Database available at ${resolve(customDatabasePath)}`,
+        );
+      } finally {
+        logSpy.mockRestore();
+      }
+    });
+
+    it('imports movies from a CSV and closes the database', async () => {
+      const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+      readFileSyncMock.mockReturnValue('csv content');
+      try {
+        await runCliWithArgs(['import-movies', 'data/movies.csv']);
+
+        expect(readFileSyncMock).toHaveBeenCalledWith(
+          'data/movies.csv',
+          'utf8',
+        );
+        expect(getDatabaseMock).toHaveBeenCalledWith(DEFAULT_DATABASE_PATH);
+        expect(importMoviesFromCsvMock).toHaveBeenCalledWith(
+          expect.objectContaining({ close: closeMock }),
+          'csv content',
+        );
+        expect(closeMock).toHaveBeenCalledOnce();
+        expect(logSpy).toHaveBeenCalledWith(
+          `2 movies imported into ${resolve(DEFAULT_DATABASE_PATH)}`,
         );
       } finally {
         logSpy.mockRestore();
