@@ -3,6 +3,12 @@ import type { Movie } from '../types/MoviesTypes.ts';
 
 type MovieRow = Omit<Movie, 'genre_ids'>;
 
+export type MovieWithDetails = Movie & {
+  runtime_minutes?: number;
+  budget?: number;
+  revenue?: number;
+};
+
 function readMovie(database: DatabaseSync, row: MovieRow): Movie {
   const genreRows = database
     .prepare(
@@ -51,14 +57,14 @@ export function getMovies(database: DatabaseSync): Movie[] {
 
 export function upsertMovies(
   database: DatabaseSync,
-  movies: Iterable<Movie>,
+  movies: Iterable<MovieWithDetails>,
 ): void {
   const statement = database.prepare(`
     INSERT INTO movies (
       id, title, original_title, original_language, overview,
       release_date, popularity, vote_average, vote_count,
-      poster_path, backdrop_path, collected_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+      poster_path, backdrop_path, runtime_minutes, budget, revenue, collected_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
     ON CONFLICT(id) DO UPDATE SET
       title = excluded.title,
       original_title = excluded.original_title,
@@ -70,6 +76,9 @@ export function upsertMovies(
       vote_count = excluded.vote_count,
       poster_path = excluded.poster_path,
       backdrop_path = excluded.backdrop_path,
+      runtime_minutes = COALESCE(excluded.runtime_minutes, movies.runtime_minutes),
+      budget = COALESCE(excluded.budget, movies.budget),
+      revenue = COALESCE(excluded.revenue, movies.revenue),
       collected_at = excluded.collected_at
   `);
   const deleteGenres = database.prepare(
@@ -97,6 +106,9 @@ export function upsertMovies(
         movie.vote_count,
         movie.poster_path,
         movie.backdrop_path,
+        movie.runtime_minutes ?? null,
+        movie.budget ?? null,
+        movie.revenue ?? null,
       );
       deleteGenres.run(movie.id);
       for (const genreId of new Set(movie.genre_ids)) {

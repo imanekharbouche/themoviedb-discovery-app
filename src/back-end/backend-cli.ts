@@ -8,6 +8,7 @@ import {
 } from './database/genre-repository.ts';
 import { parseGenresCsv } from './database/genre-csv.ts';
 import { DEFAULT_DATABASE_PATH, getDatabase } from './database/schema.ts';
+import { importMoviesFromCsv } from './movie-csv-import.ts';
 
 /** Command-line interface for movie database operations. */
 const program = new Command().description('CLI for movie database operations');
@@ -58,6 +59,25 @@ program
     try {
       const deletedCount = deleteUnusedGenres(database);
       console.log(`${deletedCount} genres removed from ${resolve(path)}`);
+    } finally {
+      database.close();
+    }
+  });
+
+program
+  .command('import-movies <csv-file>')
+  .description('Import or update movies from a CSV file')
+  .option(
+    '-p, --path <path>',
+    'path to the SQLite database file',
+    DEFAULT_DATABASE_PATH,
+  )
+  .action((csvFile: string, { path }: { path: string }) => {
+    const csvContent = readFileSync(csvFile, 'utf8');
+    const database = getDatabase(path);
+    try {
+      const count = importMoviesFromCsv(database, csvContent);
+      console.log(`${count} movies imported into ${resolve(path)}`);
     } finally {
       database.close();
     }
