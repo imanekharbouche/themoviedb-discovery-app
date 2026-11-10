@@ -97,15 +97,22 @@ export async function updateMoviesFromApi(
   const details = await Promise.all(
     movies.map(({ id }) => api.getMovieDetails(id)),
   );
-  database.exec('BEGIN');
+  const savepoint = 'update_movies_from_api';
+  const hasOuterTransaction = database.isTransaction;
+  if (hasOuterTransaction) database.exec(`SAVEPOINT ${savepoint}`);
+  else database.exec('BEGIN');
   try {
     upsertGenres(database, uniqueGenres(details));
     upsertCountries(database, uniqueCountries(details));
     upsertMovies(database, movies);
     updateProductionCountries(database, details);
-    database.exec('COMMIT');
+    if (hasOuterTransaction) database.exec(`RELEASE SAVEPOINT ${savepoint}`);
+    else database.exec('COMMIT');
   } catch (error) {
-    database.exec('ROLLBACK');
+    if (hasOuterTransaction) {
+      database.exec(`ROLLBACK TO SAVEPOINT ${savepoint}`);
+      database.exec(`RELEASE SAVEPOINT ${savepoint}`);
+    } else database.exec('ROLLBACK');
     throw error;
   }
 }

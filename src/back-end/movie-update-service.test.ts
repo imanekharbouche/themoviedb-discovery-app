@@ -177,6 +177,56 @@ describe('movie-update-service', () => {
     }
   });
 
+  it('participates in an outer transaction without committing it', async () => {
+    const database = createDatabase();
+    try {
+      database.exec('BEGIN');
+
+      await updateMoviesFromApi(database, createApi());
+
+      expect(database.prepare('SELECT id, title FROM movies').all()).toEqual([
+        { id: 1, title: 'Movie' },
+      ]);
+      expect(database.isTransaction).toBe(true);
+
+      database.exec('ROLLBACK');
+      expect(database.prepare('SELECT * FROM movies').all()).toEqual([]);
+      expect(database.prepare('SELECT * FROM genres').all()).toEqual([]);
+      expect(database.prepare('SELECT * FROM countries').all()).toEqual([]);
+    } finally {
+      if (database.isTransaction) database.exec('ROLLBACK');
+      database.close();
+    }
+  });
+
+  it('rolls back only its savepoint when an outer transaction update fails', async () => {
+    const database = createDatabase();
+    database.exec(`
+      CREATE TRIGGER reject_movie_update
+      BEFORE INSERT ON movies
+      BEGIN
+        SELECT RAISE(ABORT, 'movie update failed');
+      END
+    `);
+
+    try {
+      database.exec('BEGIN');
+
+      await expect(updateMoviesFromApi(database, createApi())).rejects.toThrow(
+        'movie update failed',
+      );
+      expect(database.isTransaction).toBe(true);
+      expect(database.prepare('SELECT * FROM movies').all()).toEqual([]);
+      expect(database.prepare('SELECT * FROM genres').all()).toEqual([]);
+      expect(database.prepare('SELECT * FROM countries').all()).toEqual([]);
+
+      database.exec('ROLLBACK');
+    } finally {
+      if (database.isTransaction) database.exec('ROLLBACK');
+      database.close();
+    }
+  });
+
   it('does not write when a details request fails', async () => {
     const database = createDatabase();
     try {
