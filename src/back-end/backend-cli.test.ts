@@ -111,6 +111,29 @@ describe('backend-cli.ts', () => {
       }
     });
 
+    it('does not open SQLite when the movie CSV cannot be read', async () => {
+      readFileSyncMock.mockImplementationOnce(() => {
+        throw new Error('CSV file not found');
+      });
+
+      await expect(
+        runCliWithArgs(['import-movies', 'missing.csv']),
+      ).rejects.toThrow('CSV file not found');
+      expect(getDatabaseMock).not.toHaveBeenCalled();
+    });
+
+    it('closes SQLite and propagates an import error', async () => {
+      readFileSyncMock.mockReturnValue('csv content');
+      importMoviesFromCsvMock.mockImplementationOnce(() => {
+        throw new Error('invalid movie data');
+      });
+
+      await expect(
+        runCliWithArgs(['import-movies', 'movies.csv']),
+      ).rejects.toThrow('invalid movie data');
+      expect(closeMock).toHaveBeenCalledOnce();
+    });
+
     it('imports countries after validating the CSV and closes the database', async () => {
       const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
       readFileSyncMock.mockReturnValue('countries csv');
