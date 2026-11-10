@@ -46,6 +46,27 @@ describe('genre-repository', () => {
     }
   });
 
+  it('rolls back every genre when a later row violates the schema', () => {
+    const database = new DatabaseSync(':memory:');
+    initializeSchema(database);
+
+    try {
+      expect(() =>
+        upsertGenres(database, [
+          { id: 18, name: 'Drama' },
+          { id: 35, name: null as never },
+        ]),
+      ).toThrow(/NOT NULL constraint failed/);
+
+      expect(getGenres(database)).toEqual([]);
+      expect(
+        database.prepare('SELECT COUNT(*) AS count FROM genres').get(),
+      ).toEqual({ count: 0 });
+    } finally {
+      database.close();
+    }
+  });
+
   it('deletes only genres without a movie association', () => {
     const database = new DatabaseSync(':memory:');
     initializeSchema(database);
