@@ -188,6 +188,18 @@ describe('backend-cli.ts', () => {
       }
     });
 
+    it('closes SQLite and propagates a country import error', async () => {
+      readFileSyncMock.mockReturnValue('countries csv');
+      upsertCountriesMock.mockImplementationOnce(() => {
+        throw new Error('country import failed');
+      });
+
+      await expect(
+        runCliWithArgs(['add-countries', 'data/countries.csv']),
+      ).rejects.toThrow('country import failed');
+      expect(closeMock).toHaveBeenCalledOnce();
+    });
+
     it('cleans unused countries and closes the database', async () => {
       const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
       try {
@@ -203,6 +215,17 @@ describe('backend-cli.ts', () => {
       } finally {
         logSpy.mockRestore();
       }
+    });
+
+    it('cleans unused countries with the configured path', async () => {
+      const customDatabasePath = './data/custom-countries.sqlite';
+
+      await runCliWithArgs(['clean-countries', '--path', customDatabasePath]);
+
+      expect(getDatabaseMock).toHaveBeenCalledWith(customDatabasePath);
+      expect(deleteUnusedCountriesMock).toHaveBeenCalledWith(
+        expect.objectContaining({ close: closeMock }),
+      );
     });
 
     it('does not open SQLite when country CSV validation fails', async () => {
