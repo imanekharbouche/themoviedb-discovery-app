@@ -60,6 +60,31 @@ npx tsx src/back-end/backend-cli.ts create-database --path ./data/ma-base.sqlite
 
 Cette commande conserve les données d’une base existante et active les clés étrangères.
 
+Pour importer ou actualiser les genres depuis le CSV fourni :
+
+```sh
+node src/back-end/backend-cli.ts add-genres ./data/genres.csv
+node src/back-end/backend-cli.ts --path ./data/ma-base.sqlite add-genres ./data/genres.csv
+```
+
+Le CSV comporte exactement les colonnes `id` et `name` (ordre et casse indifférents).
+Les identifiants sont des entiers positifs et les noms non vides. Le fichier est
+entièrement validé avant l’ouverture de SQLite. Un identifiant répété actualise
+la même ligne : le dernier nom du lot est conservé, sans doublon. Le nombre
+annoncé correspond aux lignes traitées, y compris les identifiants répétés.
+
+Pour supprimer seulement les genres sans association à un film :
+
+```sh
+node src/back-end/backend-cli.ts clean-genres
+node src/back-end/backend-cli.ts clean-genres --path ./data/ma-base.sqlite
+```
+
+`--path` est accepté avant ou après la commande. Sans cette option, le chemin
+est `data/movies.sqlite`. Chaque commande affiche le nombre de genres traités
+et le chemin de la base, puis ferme la connexion, même en cas d’échec SQL.
+L’import et le nettoyage sont transactionnels : une erreur annule le lot.
+
 ## API locale
 
 | Méthode | Route                 | Description                                                       |
