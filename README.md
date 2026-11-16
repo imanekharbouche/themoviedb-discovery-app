@@ -44,6 +44,22 @@ Les paramètres par défaut sont la langue `fr-FR`, la région `FR` et la premi�
 
 Le serveur Express écoute sur le port `3000`. Vite sert l'interface sur le port `5173` et transmet les requêtes `/api` au serveur Express.
 
+## Création de la base de données
+
+Initialisez le schéma SQLite avec :
+
+```sh
+npx tsx src/back-end/backend-cli.ts create-database
+```
+
+Le chemin par défaut est `data/movies.sqlite`. Pour choisir un autre fichier :
+
+```sh
+npx tsx src/back-end/backend-cli.ts create-database --path ./data/ma-base.sqlite
+```
+
+Cette commande conserve les données d’une base existante et active les clés étrangères.
+
 ## API locale
 
 | Méthode | Route                 | Description                                                       |
