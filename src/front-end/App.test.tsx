@@ -30,9 +30,6 @@ vi.mock('./components/NavBar/NavBar', () => ({
 vi.mock('./pages/AboutPage/AboutPage', () => ({
   default: () => <div>About page</div>,
 }));
-vi.mock('./pages/DashboardPage/DashboardPage', () => ({
-  default: () => <div>Dashboard page</div>,
-}));
 vi.mock('./pages/MovieDetailPage/MovieDetailPage', () => ({
   default: () => <div>Movie detail page</div>,
 }));
@@ -61,7 +58,6 @@ describe('App', () => {
     const expectedRoutes = [
       { path: '/movies', page: 'Movies list page' },
       { path: '/movies/123', page: 'Movie detail page' },
-      { path: '/dashboard', page: 'Dashboard page' },
       { path: '/about', page: 'About page' },
       { path: '/missing', page: 'Not found page' },
     ];
@@ -77,6 +73,27 @@ describe('App', () => {
       expect(screen.getByText(page)).toBeTruthy();
       unmount();
     }
+  });
+
+  it('renders the real dashboard page on the dashboard route', () => {
+    render(
+      <MemoryRouter initialEntries={['/dashboard']}>
+        <App />
+      </MemoryRouter>,
+    );
+
+    expect(
+      screen.getByRole('heading', {
+        level: 1,
+        name: 'Tableau de bord des films',
+      }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('heading', {
+        level: 2,
+        name: 'Aucun widget configuré',
+      }),
+    ).toBeTruthy();
   });
 
   it('renders the navigation and footer around the route outlet', () => {
