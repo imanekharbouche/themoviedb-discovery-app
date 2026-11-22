@@ -106,17 +106,28 @@ node src/back-end/backend-cli.ts clean-countries --path ./data/ma-base.sqlite
 
 ## API locale
 
-| Méthode | Route                 | Description                                                       |
-| ------- | --------------------- | ----------------------------------------------------------------- |
-| `GET`   | `/api/health`         | Vérifie que le serveur répond.                                    |
-| `GET`   | `/api/movies/popular` | Renvoie les films populaires.                                     |
-| `GET`   | `/api/movies/:id`     | Renvoie les détails du film correspondant à son identifiant TMDB. |
+| Méthode | Route                  | Description                                                       |
+| ------- | ---------------------- | ----------------------------------------------------------------- |
+| `GET`   | `/api/health`          | Vérifie que le serveur répond.                                    |
+| `GET`   | `/api/movies/popular`  | Renvoie les films populaires.                                     |
+| `GET`   | `/api/movies/:id`      | Renvoie les détails du film correspondant à son identifiant TMDB. |
+| `GET`   | `/api/discover/movies` | Renvoie les films TMDB d'une année donnée.                        |
 
 Les routes des films acceptent les paramètres `language`, `page` et `region`. Exemple :
 
 ```text
 /api/movies/popular?language=fr-FR&page=1&region=FR
 ```
+
+La route Discover exige `year` au format `YYYY` et accepte aussi `language`, `page`
+et `region` :
+
+```text
+/api/discover/movies?year=2020&language=en-US&page=2&region=US
+```
+
+Une année absente ou invalide renvoie HTTP 400. Une erreur de l'API TMDB, du réseau
+ou du JSON renvoie HTTP 500 avec le message `Failed to discover movies`.
 
 ## Vérifications
 
