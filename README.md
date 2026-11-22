@@ -85,6 +85,25 @@ est `data/movies.sqlite`. Chaque commande affiche le nombre de genres traités
 et le chemin de la base, puis ferme la connexion, même en cas d’échec SQL.
 L’import et le nettoyage sont transactionnels : une erreur annule le lot.
 
+Pour importer ou actualiser les pays depuis le CSV fourni :
+
+```sh
+node src/back-end/backend-cli.ts add-countries ./data/countries.csv
+node src/back-end/backend-cli.ts --path ./data/ma-base.sqlite add-countries ./data/countries.csv
+```
+
+Le CSV comporte exactement les colonnes `code` et `name` (ordre et casse indifférents).
+Les codes pays contiennent deux lettres majuscules (`FR`, `GB`, `US`) et les noms sont
+non vides. Le fichier est validé avant l’ouverture de SQLite et un code répété met à
+jour la ligne existante sans créer de doublon.
+
+Pour supprimer uniquement les pays sans association à un film dans `production_countries` :
+
+```sh
+node src/back-end/backend-cli.ts clean-countries
+node src/back-end/backend-cli.ts clean-countries --path ./data/ma-base.sqlite
+```
+
 ## API locale
 
 | Méthode | Route                 | Description                                                       |
