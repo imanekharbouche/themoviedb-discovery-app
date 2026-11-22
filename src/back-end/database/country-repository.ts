@@ -25,14 +25,21 @@ export function upsertCountries(
     ON CONFLICT(code) DO UPDATE SET name = excluded.name
   `);
 
-  database.exec('BEGIN');
+  const savepoint = 'upsert_countries';
+  const hasOuterTransaction = database.isTransaction;
+  if (hasOuterTransaction) database.exec(`SAVEPOINT ${savepoint}`);
+  else database.exec('BEGIN');
   try {
     for (const country of countries) {
       statement.run(country.code, country.name);
     }
-    database.exec('COMMIT');
+    if (hasOuterTransaction) database.exec(`RELEASE SAVEPOINT ${savepoint}`);
+    else database.exec('COMMIT');
   } catch (error) {
-    database.exec('ROLLBACK');
+    if (hasOuterTransaction) {
+      database.exec(`ROLLBACK TO SAVEPOINT ${savepoint}`);
+      database.exec(`RELEASE SAVEPOINT ${savepoint}`);
+    } else database.exec('ROLLBACK');
     throw error;
   }
 }
