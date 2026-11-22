@@ -75,6 +75,27 @@ describe('App', () => {
     }
   });
 
+  it('renders the real dashboard page on the dashboard route', () => {
+    render(
+      <MemoryRouter initialEntries={['/dashboard']}>
+        <App />
+      </MemoryRouter>,
+    );
+
+    expect(
+      screen.getByRole('heading', {
+        level: 1,
+        name: 'Tableau de bord des films',
+      }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('heading', {
+        level: 2,
+        name: 'Aucun widget configuré',
+      }),
+    ).toBeTruthy();
+  });
+
   it('renders the navigation and footer around the route outlet', () => {
     // Arrange and act
     render(
