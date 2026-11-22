@@ -88,12 +88,8 @@ describe('App', () => {
         name: 'Tableau de bord des films',
       }),
     ).toBeTruthy();
-    expect(
-      screen.getByRole('heading', {
-        level: 2,
-        name: 'Aucun widget configuré',
-      }),
-    ).toBeTruthy();
+    expect(screen.getByLabelText('Films en base')).toBeTruthy();
+    expect(screen.getByLabelText('Meilleure note pondérée')).toBeTruthy();
   });
 
   it('renders the navigation and footer around the route outlet', () => {
