@@ -25,14 +25,21 @@ export function upsertGenres(
     ON CONFLICT(id) DO UPDATE SET name = excluded.name
   `);
 
-  database.exec('BEGIN');
+  const savepoint = 'upsert_genres';
+  const hasOuterTransaction = database.isTransaction;
+  if (hasOuterTransaction) database.exec(`SAVEPOINT ${savepoint}`);
+  else database.exec('BEGIN');
   try {
     for (const genre of genres) {
       statement.run(genre.id, genre.name);
     }
-    database.exec('COMMIT');
+    if (hasOuterTransaction) database.exec(`RELEASE SAVEPOINT ${savepoint}`);
+    else database.exec('COMMIT');
   } catch (error) {
-    database.exec('ROLLBACK');
+    if (hasOuterTransaction) {
+      database.exec(`ROLLBACK TO SAVEPOINT ${savepoint}`);
+      database.exec(`RELEASE SAVEPOINT ${savepoint}`);
+    } else database.exec('ROLLBACK');
     throw error;
   }
 }
