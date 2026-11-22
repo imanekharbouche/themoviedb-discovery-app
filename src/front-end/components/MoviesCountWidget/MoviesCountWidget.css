@@ -1,0 +1,47 @@
+.movies-count-widget {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: 0 8px 18px rgb(41 69 99 / 9%);
+}
+
+.movies-count-widget-title {
+  margin: 0;
+  color: var(--heading);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.movies-count-widget-subtitle {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.movies-count-widget-value {
+  margin: 4px 0 0;
+  color: var(--ink-strong);
+  font-size: 1.8rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.movies-count-widget-unit {
+  color: var(--accent);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.movies-count-widget-status {
+  margin: 4px 0 0;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.movies-count-widget-status-error {
+  color: #b42318;
+}
