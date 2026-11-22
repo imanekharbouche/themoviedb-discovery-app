@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import DashboardPage from './DashboardPage';
+import DashboardPage, { DEFAULT_DASHBOARD_DATA } from './DashboardPage';
 
 const meta = {
   title: 'Pages/DashboardPage',
@@ -12,4 +12,28 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const SansWidgets: Story = {};
+export const Complet: Story = {
+  args: {
+    data: DEFAULT_DASHBOARD_DATA,
+  },
+};
+
+export const Chargement: Story = {
+  args: {
+    data: DEFAULT_DASHBOARD_DATA,
+    loading: true,
+  },
+};
+
+export const Erreur: Story = {
+  args: {
+    data: DEFAULT_DASHBOARD_DATA,
+    error: 'Impossible de charger les indicateurs du tableau de bord.',
+  },
+};
+
+export const SansWidgets: Story = {
+  args: {
+    data: null,
+  },
+};
