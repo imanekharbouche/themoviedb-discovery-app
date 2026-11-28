@@ -2,7 +2,9 @@
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import MostProfitableMovieWidget from './MostProfitableMovieWidget';
+import MostProfitableMovieWidget, {
+  calculateMovieRoi,
+} from './MostProfitableMovieWidget';
 import * as stories from './MostProfitableMovieWidget.stories';
 
 afterEach(cleanup);
@@ -27,6 +29,30 @@ describe('MostProfitableMovieWidget', () => {
     expect(screen.getByText('2007')).toBeTruthy();
     expect(screen.getByText(/69\s*667,36/)).toBeTruthy();
     expect(screen.getByText('% ROI')).toBeTruthy();
+  });
+
+  it('calculates ROI accurately and rejects zero-budget or missing-budget films, and resolves relative poster_path', () => {
+    expect(calculateMovieRoi(0, 1000000)).toBeNull();
+    expect(calculateMovieRoi(-500, 1000000)).toBeNull();
+    expect(calculateMovieRoi(null, 1000000)).toBeNull();
+    expect(calculateMovieRoi(10000, null)).toBeNull();
+    expect(calculateMovieRoi(10000, -1)).toBeNull();
+    expect(calculateMovieRoi(10000, 0)).toBe(-100);
+    expect(calculateMovieRoi(10000, 10000)).toBe(0);
+    expect(calculateMovieRoi(15000, 10465104)).toBeCloseTo(69667.36, 2);
+
+    render(
+      <MostProfitableMovieWidget
+        title="Obsession"
+        releaseYear={2026}
+        roiPercent={69667.36}
+        posterUrl="/obsession.jpg"
+      />,
+    );
+    const img = screen.getByRole('img', {
+      name: 'Affiche de Obsession',
+    }) as HTMLImageElement;
+    expect(img.src).toBe('https://image.tmdb.org/t/p/w185/obsession.jpg');
   });
 
   it('uses an explicit poster fallback when absent or failing, and handles unknown year and zero ROI', () => {

@@ -4,6 +4,7 @@ Application web de découverte de films qui s'appuie sur l'API de [The Movie Dat
 
 ## Fonctionnalités
 
+- Tableau de bord des films (`/dashboard`) regroupant 12 widgets d'indicateurs (catalogue, films remarquables, tendances par genre) et un filtrage interactif par catégorie.
 - Liste des films populaires, avec pagination et paramètres de langue et de région.
 - Fiche détaillée pour chaque film.
 - Pages « À propos » et « Page introuvable ».
@@ -87,6 +88,13 @@ Pour supprimer les pays qui ne sont associés à aucun film :
 ```sh
 npx tsx src/back-end/backend-cli.ts clean-countries
 npx tsx src/back-end/backend-cli.ts clean-countries --path ./data/ma-base.sqlite
+```
+
+Pour importer ou actualiser les films et leurs associations (`movie_genres`, `production_countries`) depuis le fichier CSV fourni :
+
+```sh
+npx tsx src/back-end/backend-cli.ts import-movies ./data/movies.csv
+npx tsx src/back-end/backend-cli.ts import-movies ./data/movies.csv --path ./data/ma-base.sqlite
 ```
 
 Le [MCD et le schéma relationnel](docs/database-model.md) décrivent les

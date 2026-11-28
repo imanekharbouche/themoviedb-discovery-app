@@ -7,7 +7,7 @@ import DashboardPage from './DashboardPage';
 afterEach(cleanup);
 
 describe('DashboardPage', () => {
-  it('renders all 12 integrated widgets organized into three sections by default', () => {
+  it('renders all 12 integrated widgets and visible movie posters organized into three sections by default', () => {
     render(<DashboardPage />);
 
     expect(
@@ -46,20 +46,38 @@ describe('DashboardPage', () => {
     expect(screen.getByText(/725/)).toBeDefined();
 
     expect(screen.getByLabelText('Film le mieux noté')).toBeDefined();
-    expect(screen.getByText('Le Parrain')).toBeDefined();
+    expect(screen.getByText('Batman Knightfall - Partie 1')).toBeDefined();
+    expect(
+      screen.getByRole('img', {
+        name: 'Affiche de Batman Knightfall - Partie 1',
+      }),
+    ).toBeDefined();
     expect(screen.getByText(/9,1/)).toBeDefined();
 
     expect(screen.getByLabelText('Film le plus populaire')).toBeDefined();
-    expect(screen.getByText('Super Mario Bros. le film')).toBeDefined();
+    expect(screen.getByText('Spider-Man : Brand New Day')).toBeDefined();
+    expect(
+      screen.getByRole('img', {
+        name: 'Affiche de Spider-Man : Brand New Day',
+      }),
+    ).toBeDefined();
     expect(screen.getByText(/1\s*036,49/)).toBeDefined();
 
     expect(screen.getByLabelText('Film le plus rentable')).toBeDefined();
-    expect(screen.getByText('Paranormal Activity')).toBeDefined();
+    expect(screen.getByText('Obsession')).toBeDefined();
+    expect(
+      screen.getByRole('img', { name: 'Affiche de Obsession' }),
+    ).toBeDefined();
     expect(screen.getByText(/69\s*667,36/)).toBeDefined();
 
     expect(screen.getByLabelText('Film le moins rentable')).toBeDefined();
-    expect(screen.getByText('The Adventures of Pluto Nash')).toBeDefined();
+    expect(screen.getByText('Mémoires d’un escargot')).toBeDefined();
+    expect(
+      screen.getByRole('img', { name: 'Affiche de Mémoires d’un escargot' }),
+    ).toBeDefined();
     expect(screen.getByText(/-100/)).toBeDefined();
+
+    expect(screen.queryByText('Affiche indisponible')).toBeNull();
 
     expect(screen.getByLabelText('Genres représentés').textContent).toContain(
       '19 genres',

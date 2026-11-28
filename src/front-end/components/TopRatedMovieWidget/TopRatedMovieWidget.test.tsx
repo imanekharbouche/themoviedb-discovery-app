@@ -26,6 +26,23 @@ describe('TopRatedMovieWidget', () => {
     expect(screen.getByText('/ 10')).toBeTruthy();
   });
 
+  it('resolves a relative TMDB poster_path to a full TMDB image URL', () => {
+    render(
+      <TopRatedMovieWidget
+        title="Batman Knightfall - Partie 1"
+        releaseYear={2026}
+        rating={9.1}
+        posterUrl="/batman-knightfall.jpg"
+      />,
+    );
+    const img = screen.getByRole('img', {
+      name: 'Affiche de Batman Knightfall - Partie 1',
+    }) as HTMLImageElement;
+    expect(img.src).toBe(
+      'https://image.tmdb.org/t/p/w185/batman-knightfall.jpg',
+    );
+  });
+
   it('uses an explicit poster fallback when the poster is absent or fails to load, and handles unknown year', () => {
     const { unmount } = render(
       <TopRatedMovieWidget {...stories.AfficheAbsente.args} />,
