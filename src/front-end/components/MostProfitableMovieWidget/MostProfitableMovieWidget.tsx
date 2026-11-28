@@ -31,6 +31,27 @@ const roiFormatter = new Intl.NumberFormat('fr-FR', {
   maximumFractionDigits: 2,
 });
 
+/**
+ * Calcule le retour sur investissement en pourcentage : `((revenue - budget) / budget) * 100`.
+ * Retourne `null` si le budget est absent, nul ou négatif (`budget <= 0`) ou si la recette est absente ou négative (`revenue < 0`).
+ */
+export function calculateMovieRoi(
+  budget: number | null | undefined,
+  revenue: number | null | undefined,
+): number | null {
+  if (
+    typeof budget !== 'number' ||
+    !Number.isFinite(budget) ||
+    budget <= 0 ||
+    typeof revenue !== 'number' ||
+    !Number.isFinite(revenue) ||
+    revenue < 0
+  ) {
+    return null;
+  }
+  return ((revenue - budget) / budget) * 100;
+}
+
 function formatReleaseYear(
   releaseYear: number | string | null | undefined,
 ): string {
@@ -61,10 +82,14 @@ export default function MostProfitableMovieWidget({
   const [failedPosterUrl, setFailedPosterUrl] = useState<string | null>(null);
 
   const normalizedTitle = typeof title === 'string' ? title.trim() : '';
-  const normalizedPosterUrl =
+  const trimmedPoster =
     typeof posterUrl === 'string' && posterUrl.trim().length > 0
       ? posterUrl.trim()
       : null;
+  const normalizedPosterUrl =
+    trimmedPoster !== null && trimmedPoster.startsWith('/')
+      ? `https://image.tmdb.org/t/p/w185${trimmedPoster}`
+      : trimmedPoster;
   const hasValidMovie =
     normalizedTitle.length > 0 &&
     typeof roiPercent === 'number' &&

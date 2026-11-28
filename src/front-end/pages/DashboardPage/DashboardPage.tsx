@@ -11,6 +11,12 @@ import MostProfitableMovieWidget from '../../components/MostProfitableMovieWidge
 import MoviesCountWidget from '../../components/MoviesCountWidget/MoviesCountWidget';
 import TopCountryWidget from '../../components/TopCountryWidget/TopCountryWidget';
 import TopRatedMovieWidget from '../../components/TopRatedMovieWidget/TopRatedMovieWidget';
+import {
+  BATMAN_KNIGHTFALL_POSTER_URL,
+  MEMOIRES_ESCARGOT_POSTER_URL,
+  OBSESSION_POSTER_URL,
+  SPIDERMAN_BRAND_NEW_DAY_POSTER_URL,
+} from './dashboardPosters';
 import './DashboardPage.css';
 
 export type DashboardCategoryFilter = 'all' | 'catalogue' | 'movies' | 'genres';
@@ -71,28 +77,28 @@ export const DEFAULT_DASHBOARD_DATA: DashboardWidgetsData = {
     moviesCount: 725,
   },
   topRatedMovie: {
-    title: 'Le Parrain',
-    releaseYear: 1972,
+    title: 'Batman Knightfall - Partie 1',
+    releaseYear: 2026,
     rating: 9.1,
-    posterUrl: null,
+    posterUrl: BATMAN_KNIGHTFALL_POSTER_URL,
   },
   mostPopularMovie: {
-    title: 'Super Mario Bros. le film',
-    releaseYear: 2023,
+    title: 'Spider-Man : Brand New Day',
+    releaseYear: 2026,
     popularity: 1036.49,
-    posterUrl: null,
+    posterUrl: SPIDERMAN_BRAND_NEW_DAY_POSTER_URL,
   },
   mostProfitableMovie: {
-    title: 'Paranormal Activity',
-    releaseYear: 2007,
+    title: 'Obsession',
+    releaseYear: 2026,
     roiPercentage: 69667.36,
-    posterUrl: null,
+    posterUrl: OBSESSION_POSTER_URL,
   },
   leastProfitableMovie: {
-    title: 'The Adventures of Pluto Nash',
-    releaseYear: 2002,
+    title: 'Mémoires d’un escargot',
+    releaseYear: 2025,
     roiPercentage: -100,
-    posterUrl: null,
+    posterUrl: MEMOIRES_ESCARGOT_POSTER_URL,
   },
   genresCount: 19,
   dominantGenre: {
@@ -193,7 +199,7 @@ export default function DashboardPage({
                 >
                   Indicateurs du catalogue
                 </h2>
-                <div className="dashboard-grid">
+                <div className="dashboard-grid dashboard-grid--kpi">
                   <MoviesCountWidget
                     count={data.moviesCount}
                     loading={loading}
@@ -230,7 +236,7 @@ export default function DashboardPage({
                 >
                   Films remarquables
                 </h2>
-                <div className="dashboard-grid">
+                <div className="dashboard-grid dashboard-grid--movies">
                   <TopRatedMovieWidget
                     title={data.topRatedMovie.title}
                     releaseYear={data.topRatedMovie.releaseYear}
@@ -278,7 +284,7 @@ export default function DashboardPage({
                 >
                   Tendances par genre
                 </h2>
-                <div className="dashboard-grid">
+                <div className="dashboard-grid dashboard-grid--kpi">
                   <GenresCountWidget
                     count={data.genresCount}
                     loading={loading}
