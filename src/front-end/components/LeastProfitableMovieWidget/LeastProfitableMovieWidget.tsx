@@ -67,10 +67,14 @@ export default function LeastProfitableMovieWidget({
   const [failedPosterUrl, setFailedPosterUrl] = useState<string | null>(null);
 
   const normalizedTitle = typeof title === 'string' ? title.trim() : '';
-  const normalizedPosterUrl =
+  const trimmedPoster =
     typeof posterUrl === 'string' && posterUrl.trim().length > 0
       ? posterUrl.trim()
       : null;
+  const normalizedPosterUrl =
+    trimmedPoster !== null && trimmedPoster.startsWith('/')
+      ? `https://image.tmdb.org/t/p/w185${trimmedPoster}`
+      : trimmedPoster;
   const hasValidMovie =
     normalizedTitle.length > 0 &&
     typeof roiPercent === 'number' &&

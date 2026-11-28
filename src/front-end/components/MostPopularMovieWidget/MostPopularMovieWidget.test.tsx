@@ -29,6 +29,21 @@ describe('MostPopularMovieWidget', () => {
     expect(screen.getByText('popularité')).toBeTruthy();
   });
 
+  it('resolves a relative TMDB poster_path to a full TMDB image URL', () => {
+    render(
+      <MostPopularMovieWidget
+        title="Spider-Man : Brand New Day"
+        releaseYear={2026}
+        popularity={1036.49}
+        posterUrl="/spiderman.jpg"
+      />,
+    );
+    const img = screen.getByRole('img', {
+      name: 'Affiche de Spider-Man : Brand New Day',
+    }) as HTMLImageElement;
+    expect(img.src).toBe('https://image.tmdb.org/t/p/w185/spiderman.jpg');
+  });
+
   it('uses an explicit fallback when the poster is absent or fails to load, and handles unknown year', () => {
     const { unmount } = render(
       <MostPopularMovieWidget {...stories.AfficheAbsente.args} />,
