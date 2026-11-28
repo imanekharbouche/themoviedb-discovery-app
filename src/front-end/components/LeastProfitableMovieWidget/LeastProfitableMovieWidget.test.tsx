@@ -29,6 +29,23 @@ describe('LeastProfitableMovieWidget', () => {
     expect(screen.getByText('% ROI')).toBeTruthy();
   });
 
+  it('resolves a relative TMDB poster_path to a full TMDB image URL', () => {
+    render(
+      <LeastProfitableMovieWidget
+        title="Mémoires d’un escargot"
+        releaseYear={2025}
+        roiPercent={-100}
+        posterUrl="/boAU3nGNP10cRCRnVUF3HiIZ8E9.jpg"
+      />,
+    );
+    const img = screen.getByRole('img', {
+      name: 'Affiche de Mémoires d’un escargot',
+    }) as HTMLImageElement;
+    expect(img.src).toBe(
+      'https://image.tmdb.org/t/p/w185/boAU3nGNP10cRCRnVUF3HiIZ8E9.jpg',
+    );
+  });
+
   it('distinguishes negative ROI, valid zero ROI, and missing ROI value', () => {
     const { unmount } = render(
       <LeastProfitableMovieWidget {...stories.ValeurNulleValide.args} />,
